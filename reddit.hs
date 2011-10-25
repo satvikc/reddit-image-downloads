@@ -13,6 +13,7 @@ import Data.List.Split (splitOn)
 import Data.Either (either)
 import Data.List (isSuffixOf)
 import System.Directory (createDirectory,doesDirectoryExist)
+import Control.Concurrent
 
 {-Provides safety and downloads only these formats-}
 imageFormats ::  [[Char]]
@@ -83,7 +84,7 @@ download url = do
         let iurls = (f "url" value) 
         let names = fmap (last.splitOn "/") iurls
         let zipped = filter g $zip  names iurls
-        sequence $ map (saveFile conn imgPath) zipped
+        mapM_ (forkIO . (saveFile conn imgPath)) zipped
         disconnect conn
     where 
         g (name,url) = any (flip isSuffixOf $ name) imageFormats  
