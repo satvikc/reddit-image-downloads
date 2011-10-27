@@ -47,10 +47,13 @@ write imgPath a conn= do
             liftIO $ databaseInsert (snd a) conn
 
 getImg imgPath a = do
-            img <- simpleHTTP (getRequest $ snd a) >>= getResponseBody
-            putStrLn $ "writing " ++ fst a
-            writeFile (imgPath ++ fst a) img
-
+            {-img <- simpleHTTP (getRequest $ snd a) >>= getResponseBody-}
+            doc <- openURI $ snd a
+            case doc of 
+                Left err -> putStrLn err
+                Right img -> do 
+                                putStrLn $ "writing " ++ fst a
+                                BS.writeFile (imgPath ++ fst a) img
 {-Call it only one time to create the required database-}
 databaseCreation conn = do
                     run conn "CREATE TABLE images (number INTEGER PRIMARY KEY, url VARCHAR(200))" []
