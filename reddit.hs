@@ -20,7 +20,13 @@ imageFormats ::  [[Char]]
 imageFormats = ["jpg","png","gif","jpeg"]
 
 {-This is where you provide the reddit json urls-}
-urls =  ["http://www.reddit.com/r/earthporn.json","http://www.reddit.com/r/pics.json"]
+urls =  ["http://www.reddit.com/r/nsfw.json",
+        "http://www.reddit.com/r/nsfw/new.json",
+        "http://www.reddit.com/r/NSFW_Wallpapers.json",
+        "http://www.reddit.com/r/wallpapers.json",
+        "http://www.reddit.com/r/girlsinrippeddenim.json",
+        "http://www.reddit.com/r/girlswithglasses.json",
+        "http://www.reddit.com/r/pics.json"]
 
 {-Generic json search to find a given key in the haskell JSValue object -}
 genericSearch :: String -> JSValue -> [JSValue]
@@ -37,14 +43,17 @@ fromJS (JSString v) = fromJSString v
 
 {-function to save the file and add an instance in the database-}
 write imgPath a conn= do 
-            doc <- openURI $ snd a 
+            forkIO  (getImg imgPath a)
+            liftIO $ databaseInsert (snd a) conn
+
+getImg imgPath a = do
+            {-img <- simpleHTTP (getRequest $ snd a) >>= getResponseBody-}
+            doc <- openURI $ snd a
             case doc of 
                 Left err -> putStrLn err
                 Right img -> do 
                                 putStrLn $ "writing " ++ fst a
                                 BS.writeFile (imgPath ++ fst a) img
-                                liftIO $ databaseInsert (snd a) conn
-
 {-Call it only one time to create the required database-}
 databaseCreation conn = do
                     run conn "CREATE TABLE images (number INTEGER PRIMARY KEY, url VARCHAR(200))" []
@@ -84,7 +93,7 @@ download url = do
         let iurls = (f "url" value) 
         let names = fmap (last.splitOn "/") iurls
         let zipped = filter g $zip  names iurls
-        mapM_ (forkIO . (saveFile conn imgPath)) zipped
+        mapM_ ((saveFile conn imgPath)) zipped
         disconnect conn
     where 
         g (name,url) = any (flip isSuffixOf $ name) imageFormats  
