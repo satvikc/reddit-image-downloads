@@ -20,12 +20,8 @@ imageFormats ::  [[Char]]
 imageFormats = ["jpg","png","gif","jpeg"]
 
 {-This is where you provide the reddit json urls-}
-urls =  ["http://www.reddit.com/r/nsfw.json",
-        "http://www.reddit.com/r/nsfw/new.json",
-        "http://www.reddit.com/r/NSFW_Wallpapers.json",
+urls =  [
         "http://www.reddit.com/r/wallpapers.json",
-        "http://www.reddit.com/r/girlsinrippeddenim.json",
-        "http://www.reddit.com/r/girlswithglasses.json",
         "http://www.reddit.com/r/pics.json"]
 
 {-Generic json search to find a given key in the haskell JSValue object -}
